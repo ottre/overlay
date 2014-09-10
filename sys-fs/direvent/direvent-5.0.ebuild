@@ -15,7 +15,7 @@ KEYWORDS="~amd64 ~x86"
 IUSE="nls"
 
 DEPEND="sys-apps/texinfo
-	nls? ( sys-devel/gettext )"
+		nls? ( sys-devel/gettext )"
 RDEPEND=""
 
 src_configure() {
@@ -27,11 +27,9 @@ src_configure() {
 }
 
 src_install() {
-	emake DESTDIR="${D}" install
+	default
 
 	newinitd "${FILESDIR}"/${PN}.init ${PN}
-
-	dodoc AUTHORS ChangeLog NEWS README THANKS
 }
 
 pkg_postinst() {
@@ -44,6 +42,11 @@ pkg_postinst() {
 
 pkg_postrm() {
 	if [ -L /etc/init.d/${PN}.* ]; then
-		rm /etc/init.d/${PN}.* || die
+		elog "There are broken symlinks to the ${PN} init script in /etc/init.d."
+		elog "To clean up, run:"
+		elog "1. for symlink in /etc/init.d/${PN}.*; do"
+		elog "2. rc-update delete \${symlink##*/}"
+		elog "3. rm \$symlink"
+		elog "4. done"
 	fi
 }
