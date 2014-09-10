@@ -1,0 +1,39 @@
+#!/sbin/runscript
+# Copyright 1999-2014 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+DIREVENT_PID="/var/run/${SVCNAME}.pid"
+DIREVENT_BIN="/usr/bin/direvent"
+if
+	[ "$SVCNAME" = "${SVCNAME#*.}" ]
+then
+	DIREVENT_USR="root"
+	DIREVENT_CNF="/etc/direvent.conf"
+# support multiple instances
+else
+	DIREVENT_USR="${SVCNAME#*.}"
+	DIREVENT_CNF="/home/${DIREVENT_USR}/direvent.conf"
+fi
+DIREVENT_OPTS="--pidfile ${DIREVENT_PID} --user ${DIREVENT_USR} ${DIREVENT_CNF}"
+
+depend() {
+	need localmount
+	after bootmisc
+	use logger
+}
+
+start() {
+	ebegin "Starting direvent for user ${DIREVENT_USR}"
+	/sbin/start-stop-daemon --start --exec "${DIREVENT_BIN}" \
+		--pidfile "${DIREVENT_PID}" \
+		-- ${DIREVENT_OPTS}
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping direvent for user ${DIREVENT_USR}"
+	/sbin/start-stop-daemon --stop --exec "${DIREVENT_BIN}" \
+		--pidfile "${DIREVENT_PID}"
+	eend $?
+}
